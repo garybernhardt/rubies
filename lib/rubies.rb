@@ -114,9 +114,11 @@ def emit_vars(vars)
   puts shell_code
 end
 
-case ARGV.fetch(0)
-when 'ruby-info' then ruby_info
-when 'activate' then activate(ARGV.fetch(1), ARGV.fetch(2))
-when 'deactivate' then deactivate
-else raise ArgumentError.new("No subcommand given")
+if __FILE__ == $0
+  case ARGV.fetch(0)
+  when 'ruby-info' then ruby_info
+  when 'activate' then activate(ARGV.fetch(1), ARGV.fetch(2))
+  when 'deactivate' then deactivate
+  else raise ArgumentError.new("No subcommand given")
+  end
 end
