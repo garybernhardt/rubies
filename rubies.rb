@@ -28,7 +28,7 @@ class RubyInfo < Struct.new(:ruby_engine,
   end
 end
 
-class SystemState < Struct.new(:current_path,
+class Environment < Struct.new(:current_path,
                                :current_gem_home,
                                :current_gem_path,
                                :activated_ruby_bin,
@@ -62,18 +62,18 @@ def activate(ruby_name, sandbox)
   ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
 
   ruby_info = RubyInfo.from_ruby_bin_path(ruby_bin)
-  state = SystemState.new(ruby_bin)
+  env = Environment.new(ruby_bin)
 
   sandbox = File.expand_path(sandbox)
   sandboxed_gems = "#{sandbox}/.gem/#{ruby_info.ruby_engine}/#{ruby_info.ruby_version}"
   sandboxed_bin = "#{sandboxed_gems}/bin"
 
-  current_path = remove_from_PATH(state.current_path,
-                                  [state.activated_ruby_bin,
-                                   state.activated_sandbox_bin])
+  current_path = remove_from_PATH(env.current_path,
+                                  [env.activated_ruby_bin,
+                                   env.activated_sandbox_bin])
 
   vars = {
-    "PATH" => "#{sandboxed_bin}:#{ruby_bin}:#{state.current_path}",
+    "PATH" => "#{sandboxed_bin}:#{ruby_bin}:#{env.current_path}",
     "GEM_HOME" => "#{sandboxed_gems}",
     "GEM_PATH" => "#{sandboxed_gems}:#{ruby_info.gem_path}",
     "RUBIES_ACTIVATED_RUBY_BIN_PATH" => ruby_bin,
@@ -84,10 +84,10 @@ end
 
 def deactivate
   ruby_info = RubyInfo.from_default_ruby
-  state = SystemState.new
-  restored_path = remove_from_PATH(state.current_path,
-                                   [state.activated_ruby_bin,
-                                    state.activated_sandbox_bin])
+  env = Environment.new
+  restored_path = remove_from_PATH(env.current_path,
+                                   [env.activated_ruby_bin,
+                                    env.activated_sandbox_bin])
   vars = {
     "PATH" => restored_path,
     "GEM_HOME" => nil,
