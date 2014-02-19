@@ -7,10 +7,10 @@ module Rubies
                                 :current_gem_path => "/lib/gems:/myproj/.gems",
                                 :activated_ruby_bin => "/usr/local/bin",
                                 :activated_sandbox_bin => "/myproj/.gems/bin") }
-    let(:ruby_info) { RubyInfo.new("ruby",
-                                   "2.1.0",
-                                   "/usr/local/bin",
-                                   "/lib/gems") }
+    let(:ruby_info) { RubyInfo.new(:ruby_engine => "ruby",
+                                   :ruby_version => "2.1.0",
+                                   :bin_path => "/usr/local/bin",
+                                   :gem_path => "/lib/gems") }
     let(:new_vars) { Commands.activate(env, ruby_info, "ruby-2.1.0", "/myproj") }
     let(:expected_bin) { ["/myproj/.gem/ruby/2.1.0/bin",
                           "/usr/local/bin",

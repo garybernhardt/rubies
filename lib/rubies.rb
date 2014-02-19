@@ -4,14 +4,14 @@ require 'rubygems'
 module Rubies
   class StrictStruct < Struct
     def initialize(params)
-      super(*Environment.members.map { |member| params.fetch(member) })
+      super(*self.class.members.map { |member| params.fetch(member) })
     end
   end
 
-  class RubyInfo < Struct.new(:ruby_engine,
-                              :ruby_version,
-                              :bin_path,
-                              :gem_path)
+  class RubyInfo < StrictStruct.new(:ruby_engine,
+                                    :ruby_version,
+                                    :bin_path,
+                                    :gem_path)
 
     def self.from_whichever_ruby_is_in_the_path
       from_ruby_command("ruby")
@@ -34,7 +34,10 @@ module Rubies
         raise RuntimeError.new("Ruby info had wrong length; this is a bug!")
       end
 
-      new(*ruby_info)
+      new(:ruby_engine => ruby_info.fetch(0),
+          :ruby_version => ruby_info.fetch(1),
+          :bin_path => ruby_info.fetch(2),
+          :gem_path => ruby_info.fetch(3))
     end
   end
 
