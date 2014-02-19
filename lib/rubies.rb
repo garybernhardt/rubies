@@ -2,6 +2,12 @@
 require 'rubygems'
 
 module Rubies
+  class StrictStruct < Struct
+    def initialize(params)
+      super(*Environment.members.map { |member| params.fetch(member) })
+    end
+  end
+
   class RubyInfo < Struct.new(:ruby_engine,
                               :ruby_version,
                               :bin_path,
@@ -32,11 +38,11 @@ module Rubies
     end
   end
 
-  class Environment < Struct.new(:current_path,
-                                 :current_gem_home,
-                                 :current_gem_path,
-                                 :activated_ruby_bin,
-                                 :activated_sandbox_bin)
+  class Environment < StrictStruct.new(:current_path,
+                                       :current_gem_home,
+                                       :current_gem_path,
+                                       :activated_ruby_bin,
+                                       :activated_sandbox_bin)
 
     def self.from_system_environment
       # Get current configuration
@@ -48,8 +54,11 @@ module Rubies
       activated_ruby_bin = ENV.fetch("RUBIES_ACTIVATED_RUBY_BIN_PATH") { nil }
       activated_sandbox_bin = ENV.fetch("RUBIES_ACTIVATED_SANDBOX_BIN_PATH") { nil }
 
-      new(current_path, current_gem_home, current_gem_path, activated_ruby_bin,
-          activated_sandbox_bin)
+      new(:current_path => current_path,
+          :current_gem_home => current_gem_home,
+          :current_gem_path => current_gem_path,
+          :activated_ruby_bin => activated_ruby_bin,
+          :activated_sandbox_bin => activated_sandbox_bin)
     end
   end
 
