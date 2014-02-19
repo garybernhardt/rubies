@@ -61,6 +61,15 @@ module Rubies
       end
     end
 
+    context "when no subcommand is given" do
+      it "shows usage" do
+        expect do
+          Configuration.from_arguments([])
+        end.to raise_error(SystemExit)
+        stderr.should =~ /\AUsage:/
+      end
+    end
+
     context "when an unknown subcommand is given" do
       it "shows usage" do
         expect do

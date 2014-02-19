@@ -73,7 +73,9 @@ module Rubies
 
     def self.enforce_subcommand_args(parser, args)
       subcommand, *args = args
-      if subcommand == "activate"
+      if subcommand == nil
+        usage(1, parser)
+      elsif subcommand == "activate"
         if args.length != 2
           usage(1, parser, "wrong number of arguments for activate")
         end
