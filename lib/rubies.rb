@@ -8,7 +8,8 @@ module Rubies
       Rubies::Commands.ruby_info!
     when 'activate'
       Rubies::Commands.activate!(ARGV.fetch(1), ARGV.fetch(2))
-    when 'deactivate' then Rubies::Commands.deactivate!
+    when 'deactivate'
+      Rubies::Commands.deactivate!
     else raise ArgumentError.new("No subcommand given")
     end
   end
