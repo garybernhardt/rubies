@@ -73,7 +73,7 @@ module Rubies
                                               env.activated_sandbox_bin])
 
       {
-        "PATH" => "#{sandboxed_bin}:#{ruby_info.bin_path}:#{env.current_path}",
+        "PATH" => "#{sandboxed_bin}:#{ruby_info.bin_path}:#{current_path}",
         "GEM_HOME" => "#{sandboxed_gems}",
         "GEM_PATH" => "#{sandboxed_gems}:#{ruby_info.gem_path}",
         "RUBIES_ACTIVATED_RUBY_BIN_PATH" => ruby_info.bin_path,
