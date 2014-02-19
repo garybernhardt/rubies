@@ -2,6 +2,22 @@
 require 'rubygems'
 
 module Rubies
+  def self.main
+    case ARGV.fetch(0)
+    when 'ruby-info' then Rubies::Commands.ruby_info
+    when 'activate'
+      ruby_name = ARGV.fetch(1)
+      sandbox = ARGV.fetch(2)
+      ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
+      Rubies::Commands.activate!(Rubies::Environment.from_system_environment,
+                                 Rubies::RubyInfo.from_bin_dir(ruby_bin),
+                                 ruby_name,
+                                 sandbox)
+    when 'deactivate' then Rubies::Commands.deactivate!
+    else raise ArgumentError.new("No subcommand given")
+    end
+  end
+
   module Commands
     def self.activate!(env, ruby_info, ruby_name, sandbox)
       Rubies.emit_vars!(activate(env, ruby_info, ruby_name, sandbox))
@@ -132,18 +148,4 @@ module Rubies
   end
 end
 
-if __FILE__ == $0
-  case ARGV.fetch(0)
-  when 'ruby-info' then Rubies::Commands.ruby_info
-  when 'activate'
-    ruby_name = ARGV.fetch(1)
-    sandbox = ARGV.fetch(2)
-    ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
-    Rubies::Commands.activate!(Rubies::Environment.from_system_environment,
-                               Rubies::RubyInfo.from_bin_dir(ruby_bin),
-                               ruby_name,
-                               sandbox)
-  when 'deactivate' then Rubies::Commands.deactivate!
-  else raise ArgumentError.new("No subcommand given")
-  end
-end
+Rubies.main if __FILE__ == $0
