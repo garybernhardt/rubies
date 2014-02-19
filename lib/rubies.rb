@@ -134,12 +134,12 @@ module Rubies
     end
 
     def self.deactivate!
-      puts deactivate.to_shell_commands
+      env = Environment.from_system_environment(ENV)
+      ruby_info = RubyInfo.from_whichever_ruby_is_in_the_path
+      puts deactivate(env, ruby_info).to_shell_commands
     end
 
-    def self.deactivate
-      ruby_info = RubyInfo.from_whichever_ruby_is_in_the_path
-      env = Environment.from_system_environment(ENV)
+    def self.deactivate(env, ruby_info)
       restored_path = env.remove_dirs_from_path([env.activated_ruby_bin,
                                                  env.activated_sandbox_bin])
       Environment.new(
