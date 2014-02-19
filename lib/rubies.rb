@@ -1,16 +1,107 @@
 #!/usr/bin/env ruby
+require 'optparse'
 require 'rubygems'
 
 module Rubies
   def self.main
-    case ARGV.fetch(0)
+    subcommand, *args = Configuration.from_arguments(ARGV)
+    case subcommand
     when 'ruby-info'
       Rubies::Commands.ruby_info!
     when 'activate'
-      Rubies::Commands.activate!(ARGV.fetch(1), ARGV.fetch(2))
+      Rubies::Commands.activate!(*args)
     when 'deactivate'
       Rubies::Commands.deactivate!
-    else raise ArgumentError.new("No subcommand given")
+    end
+  end
+
+  class StrictStruct < Struct
+    def initialize(params)
+      super(*self.class.members.map { |member| params.fetch(member.to_sym) })
+    end
+
+    def merge(params)
+      self.class.new(to_h.merge(params))
+    end
+
+    # Newer rubies have this; older rubies don't
+    def to_h
+      Hash[members.map(&:to_sym).zip(values)]
+    end
+  end
+
+  class Configuration
+    def self.from_arguments(argv)
+      parser = build_parser
+      args = parse_args(parser, argv)
+      enforce_subcommand_args(parser, args)
+      args
+    end
+
+    def self.build_parser
+      parser = OptionParser.new do |opts|
+        opts.banner = dedent(<<-END)
+        Usage: #{$PROGRAM_NAME} [options]
+        END
+
+        opts.on("-h", "--help", "Show this message") do |v|
+          usage(0, parser)
+        end
+
+        opts.separator("")
+        opts.separator("Available commands:")
+        opts.separator("")
+        opts.separator(dedent(<<-END))
+        #{$PROGRAM_NAME} activate [ruby-name] [gem-path]
+          Activates the named Ruby version and sets the gem path. The specified
+          Ruby will be on $PATH. Gems will be installed to the specified gem
+          path. Globally installed gems will still be visible.
+
+        #{$PROGRAM_NAME} deactivate
+          Undo whatever any previous activate did.
+        END
+      end
+    end
+
+    def self.parse_args(parser, argv)
+      begin
+        args = parser.parse(argv)
+      rescue OptionParser::InvalidOption => e
+        usage(1, e.to_s + "\n" + parser.to_s)
+      end
+    end
+
+    def self.enforce_subcommand_args(parser, args)
+      subcommand, *args = args
+      if subcommand == nil
+        usage(1, parser)
+      elsif subcommand == "activate"
+        if args.length != 2
+          usage(1, parser, "wrong number of arguments for activate")
+        end
+      elsif subcommand == "deactivate"
+        if args.length != 0
+          usage(1, parser, "deactivate doesn't take any arguments")
+        end
+      elsif subcommand == "ruby-info"
+        if args.length != 0
+          usage(1, parser, "ruby-info doesn't take any arguments")
+        end
+      else
+        usage(1, parser, "#{subcommand} is not a command")
+      end
+    end
+
+    def self.usage(exit_status, usage_message, error_message=nil)
+      message = [error_message, usage_message].compact.join("\n")
+      $stderr.puts message
+      raise SystemExit.new(exit_status)
+    end
+
+    def self.dedent(text)
+      lines = text.split("\n")
+      indentation = /^( *)/.match(lines.first).captures.first.length
+      lines.map { |line| line[indentation..-1] }.join("\n")
     end
   end
 
@@ -62,21 +153,6 @@ module Rubies
     def self.ruby_info!
       info = RubyInfo.from_this_ruby_process
       puts [info.ruby_engine, info.ruby_version, info.bin_dir, info.gem_path]
-    end
-  end
-
-  class StrictStruct < Struct
-    def initialize(params)
-      super(*self.class.members.map { |member| params.fetch(member.to_sym) })
-    end
-
-    def merge(params)
-      self.class.new(to_h.merge(params))
-    end
-
-    # Newer rubies have this; older rubies don't
-    def to_h
-      Hash[members.map(&:to_sym).zip(values)]
     end
   end
 
