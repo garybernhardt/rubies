@@ -7,21 +7,20 @@ module Rubies
     when 'ruby-info'
       Rubies::Commands.ruby_info!
     when 'activate'
-      ruby_name = ARGV.fetch(1)
-      sandbox = ARGV.fetch(2)
-      ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
-      Rubies::Commands.activate!(Rubies::Environment.from_system_environment(ENV),
-                                 Rubies::RubyInfo.from_bin_dir(ruby_bin),
-                                 ruby_name,
-                                 sandbox)
+      Rubies::Commands.activate!(ARGV.fetch(1), ARGV.fetch(2))
     when 'deactivate' then Rubies::Commands.deactivate!
     else raise ArgumentError.new("No subcommand given")
     end
   end
 
   module Commands
-    def self.activate!(env, ruby_info, ruby_name, sandbox)
-      puts activate(env, ruby_info, ruby_name, sandbox).to_shell_commands
+    def self.activate!(ruby_name, sandbox)
+      ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
+      env = Rubies::Commands.activate(Rubies::Environment.from_system_environment(ENV),
+                                      Rubies::RubyInfo.from_bin_dir(ruby_bin),
+                                      ruby_name,
+                                      sandbox)
+      puts env.to_shell_commands
     end
 
     def self.activate(env, ruby_info, ruby_name, sandbox)
