@@ -18,5 +18,12 @@ module Rubies
       info.ruby_version.should == RUBY_VERSION
       info.gem_path.should == Gem.path.join(':')
     end
+
+    it "gets information from this ruby" do
+      info = RubyInfo.from_this_ruby_process
+      info.ruby_engine.should == "ruby"
+      info.ruby_version.should == RUBY_VERSION
+      info.gem_path.should == Gem.path.join(':')
+    end
   end
 end
