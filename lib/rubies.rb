@@ -9,7 +9,7 @@ module Rubies
       ruby_name = ARGV.fetch(1)
       sandbox = ARGV.fetch(2)
       ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
-      Rubies::Commands.activate!(Rubies::Environment.from_system_environment,
+      Rubies::Commands.activate!(Rubies::Environment.from_system_environment(ENV),
                                  Rubies::RubyInfo.from_bin_dir(ruby_bin),
                                  ruby_name,
                                  sandbox)
@@ -20,7 +20,7 @@ module Rubies
 
   module Commands
     def self.activate!(env, ruby_info, ruby_name, sandbox)
-      Rubies.emit_vars!(activate(env, ruby_info, ruby_name, sandbox))
+      puts activate(env, ruby_info, ruby_name, sandbox).to_shell_commands
     end
 
     def self.activate(env, ruby_info, ruby_name, sandbox)
@@ -28,36 +28,32 @@ module Rubies
       sandboxed_gems = "#{sandbox}/.gem/#{ruby_info.ruby_engine}/#{ruby_info.ruby_version}"
       sandboxed_bin = "#{sandboxed_gems}/bin"
 
-      path = Rubies.remove_from_PATH(env.path,
-                                     [env.activated_ruby_bin,
-                                      env.activated_sandbox_bin])
+      path = env.remove_dirs_from_path([env.activated_ruby_bin,
+                                        env.activated_sandbox_bin])
 
-      {
-        "PATH" => "#{sandboxed_bin}:#{ruby_info.bin_dir}:#{path}",
-        "GEM_HOME" => "#{sandboxed_gems}",
-        "GEM_PATH" => "#{sandboxed_gems}:#{ruby_info.gem_path}",
-        "RUBIES_ACTIVATED_RUBY_BIN_DIR" => ruby_info.bin_dir,
-        "RUBIES_ACTIVATED_SANDBOX_BIN_DIR" => sandboxed_bin,
-      }
+      Environment.new(
+        :path => "#{sandboxed_bin}:#{ruby_info.bin_dir}:#{path}",
+        :current_gem_home => "#{sandboxed_gems}",
+        :current_gem_path => "#{sandboxed_gems}:#{ruby_info.gem_path}",
+        :activated_ruby_bin => ruby_info.bin_dir,
+        :activated_sandbox_bin => sandboxed_bin)
     end
 
     def self.deactivate!
-      Rubies.emit_vars!(deactivate)
+      puts deactivate.to_shell_commands
     end
 
     def self.deactivate
       ruby_info = RubyInfo.from_whichever_ruby_is_in_the_path
-      env = Environment.from_system_environment
-      restored_path = Rubies.remove_from_PATH(env.path,
-                                              [env.activated_ruby_bin,
-                                               env.activated_sandbox_bin])
-      {
-        "PATH" => restored_path,
-        "GEM_HOME" => nil,
-        "GEM_PATH" => nil,
-        "RUBIES_ACTIVATED_RUBY_BIN_DIR" => nil,
-        "RUBIES_ACTIVATED_SANDBOX_BIN_DIR" => nil,
-      }
+      env = Environment.from_system_environment(ENV)
+      restored_path = env.remove_dirs_from_path([env.activated_ruby_bin,
+                                                 env.activated_sandbox_bin])
+      Environment.new(
+        :path => restored_path,
+        :current_gem_home => nil,
+        :current_gem_path => nil,
+        :activated_ruby_bin => nil,
+        :activated_sandbox_bin => nil)
     end
 
     def self.ruby_info
@@ -72,7 +68,16 @@ module Rubies
 
   class StrictStruct < Struct
     def initialize(params)
-      super(*self.class.members.map { |member| params.fetch(member) })
+      super(*self.class.members.map { |member| params.fetch(member.to_sym) })
+    end
+
+    def merge(params)
+      self.class.new(to_h.merge(params))
+    end
+
+    # Newer rubies have this; older rubies don't
+    def to_h
+      Hash[members.map(&:to_sym).zip(values)]
     end
   end
 
@@ -82,19 +87,39 @@ module Rubies
                                        :activated_ruby_bin,
                                        :activated_sandbox_bin)
 
-    def self.from_system_environment
-      path = ENV.fetch("PATH")
-      current_gem_home = ENV.fetch("GEM_HOME") { nil }
-      current_gem_path = ENV.fetch("GEM_PATH") { nil }
+    SHELL_KEYS = {
+      :path => "PATH",
+      :current_gem_home => "GEM_HOME",
+      :current_gem_path => "GEM_PATH",
+      :activated_ruby_bin => "RUBIES_ACTIVATED_RUBY_BIN_DIR",
+      :activated_sandbox_bin => "RUBIES_ACTIVATED_SANDBOX_BIN_DIR",
+    }
 
-      activated_ruby_bin = ENV.fetch("RUBIES_ACTIVATED_RUBY_BIN_DIR") { nil }
-      activated_sandbox_bin = ENV.fetch("RUBIES_ACTIVATED_SANDBOX_BIN_DIR") { nil }
+    def self.from_system_environment(unix_env)
+      keys = members.map(&:to_sym)
+      values = keys.map do |key|
+        shell_key = SHELL_KEYS.fetch(key)
+        unix_env.fetch(shell_key) { nil }
+      end
+      new(Hash[keys.zip(values)])
+    end
 
-      new(:path => path,
-          :current_gem_home => current_gem_home,
-          :current_gem_path => current_gem_path,
-          :activated_ruby_bin => activated_ruby_bin,
-          :activated_sandbox_bin => activated_sandbox_bin)
+    def to_shell_commands
+      unix_vars = self.to_h.map do |k, v|
+        k = SHELL_KEYS.fetch(k)
+        [k, v]
+      end
+      unix_vars.sort.map do |k, v|
+        if v.nil?
+          %{unset #{k}}
+        else
+          %{export #{k}="#{v}"}
+        end
+      end.join("\n")
+    end
+
+    def remove_dirs_from_path(dirs_to_remove)
+      (self.path.split(/:/) - dirs_to_remove).join(":")
     end
   end
 
@@ -129,22 +154,6 @@ module Rubies
           :bin_dir => ruby_info.fetch(2),
           :gem_path => ruby_info.fetch(3))
     end
-  end
-
-  def self.remove_from_PATH(path_variable, dirs_to_remove)
-    (path_variable.split(/:/) - dirs_to_remove).join(":")
-  end
-
-  def self.emit_vars!(vars)
-    sorted_vars = vars.to_a.sort
-    shell_code = sorted_vars.map do |k, v|
-      if v.nil?
-        %{unset #{k}}
-      else
-        %{export #{k}="#{v}"}
-      end
-    end.join("\n")
-    puts shell_code
   end
 end
 
