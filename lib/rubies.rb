@@ -28,12 +28,12 @@ module Rubies
       sandboxed_gems = "#{sandbox}/.gem/#{ruby_info.ruby_engine}/#{ruby_info.ruby_version}"
       sandboxed_bin = "#{sandboxed_gems}/bin"
 
-      current_path = Rubies.remove_from_PATH(env.current_path,
-                                             [env.activated_ruby_bin,
-                                              env.activated_sandbox_bin])
+      path = Rubies.remove_from_PATH(env.path,
+                                     [env.activated_ruby_bin,
+                                      env.activated_sandbox_bin])
 
       {
-        "PATH" => "#{sandboxed_bin}:#{ruby_info.bin_dir}:#{current_path}",
+        "PATH" => "#{sandboxed_bin}:#{ruby_info.bin_dir}:#{path}",
         "GEM_HOME" => "#{sandboxed_gems}",
         "GEM_PATH" => "#{sandboxed_gems}:#{ruby_info.gem_path}",
         "RUBIES_ACTIVATED_RUBY_BIN_DIR" => ruby_info.bin_dir,
@@ -48,7 +48,7 @@ module Rubies
     def self.deactivate
       ruby_info = RubyInfo.from_whichever_ruby_is_in_the_path
       env = Environment.from_system_environment
-      restored_path = Rubies.remove_from_PATH(env.current_path,
+      restored_path = Rubies.remove_from_PATH(env.path,
                                               [env.activated_ruby_bin,
                                                env.activated_sandbox_bin])
       {
@@ -76,21 +76,21 @@ module Rubies
     end
   end
 
-  class Environment < StrictStruct.new(:current_path,
+  class Environment < StrictStruct.new(:path,
                                        :current_gem_home,
                                        :current_gem_path,
                                        :activated_ruby_bin,
                                        :activated_sandbox_bin)
 
     def self.from_system_environment
-      current_path = ENV.fetch("PATH")
+      path = ENV.fetch("PATH")
       current_gem_home = ENV.fetch("GEM_HOME") { nil }
       current_gem_path = ENV.fetch("GEM_PATH") { nil }
 
       activated_ruby_bin = ENV.fetch("RUBIES_ACTIVATED_RUBY_BIN_DIR") { nil }
       activated_sandbox_bin = ENV.fetch("RUBIES_ACTIVATED_SANDBOX_BIN_DIR") { nil }
 
-      new(:current_path => current_path,
+      new(:path => path,
           :current_gem_home => current_gem_home,
           :current_gem_path => current_gem_path,
           :activated_ruby_bin => activated_ruby_bin,

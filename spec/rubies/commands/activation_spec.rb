@@ -2,7 +2,7 @@ require_relative "../../../lib/rubies"
 
 module Rubies
   describe 'activation' do
-    let(:env) { Environment.new(:current_path => "/usr/bin:/bin",
+    let(:env) { Environment.new(:path => "/usr/bin:/bin",
                                 :current_gem_home => "/myproj/.gems",
                                 :current_gem_path => "/lib/gems:/myproj/.gems",
                                 :activated_ruby_bin => "/usr/local/bin",
@@ -23,9 +23,9 @@ module Rubies
     it "removes any previous activation's PATH entries" do
       env.activated_ruby_bin = "/usr/local/otherruby/bin"
       env.activated_sandbox_bin = "/otherproj/.gems/bin"
-      env.current_path = [env.activated_sandbox_bin,
-                          env.activated_ruby_bin,
-                          env.current_path].join(":")
+      env.path = [env.activated_sandbox_bin,
+                  env.activated_ruby_bin,
+                  env.path].join(":")
       new_path = new_vars.fetch("PATH")
       new_path.should_not include env.activated_ruby_bin
       new_path.should_not include env.activated_sandbox_bin
