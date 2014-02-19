@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require 'optparse'
 require 'rubygems'
 
 module Rubies
@@ -26,6 +27,66 @@ module Rubies
     # Newer rubies have this; older rubies don't
     def to_h
       Hash[members.map(&:to_sym).zip(values)]
+    end
+  end
+
+  class Configuration
+    def self.from_arguments(argv)
+      parser = OptionParser.new do |opts|
+        opts.banner = dedent(<<-END)
+        Usage: #{$PROGRAM_NAME} [options]
+        END
+
+        opts.on("-h", "--help", "Show this message") do |v|
+          usage(0, parser)
+        end
+
+        opts.separator("")
+        opts.separator("Available commands:")
+        opts.separator("")
+        opts.separator(dedent(<<-END))
+        #{$PROGRAM_NAME} activate [ruby-name] [gem-path]
+          Activates the named Ruby version and sets the gem path. The specified
+          Ruby will be on $PATH. Gems will be installed to the specified gem
+          path. Globally installed gems will still be visible.
+
+        #{$PROGRAM_NAME} deactivate
+          Undo whatever any previous activate did.
+        END
+      end
+
+      begin
+        command_args = parser.parse(argv)
+      rescue OptionParser::InvalidOption => e
+        usage(1, e + "\n" + parser)
+      end
+
+      subcommand, *args = command_args
+      if subcommand == "activate"
+        if args.length != 2
+          usage(1, parser, "wrong number of arguments for activate")
+        end
+      elsif subcommand == "deactivate"
+        if args.length != 0
+          usage(1, parser, "deactivate doesn't take any arguments")
+        end
+      else
+        usage(1, parser, "#{subcommand} is not a command")
+      end
+
+      command_args
+    end
+
+    def self.usage(exit_status, usage_message, error_message=nil)
+      message = [error_message, usage_message].compact.join("\n")
+      $stderr.puts message
+      raise SystemExit.new(exit_status)
+    end
+
+    def self.dedent(text)
+      lines = text.split("\n")
+      indentation = /^( *)/.match(lines.first).captures.first.length
+      lines.map { |line| line[indentation..-1] }.join("\n")
     end
   end
 
