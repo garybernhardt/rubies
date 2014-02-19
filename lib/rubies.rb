@@ -25,7 +25,10 @@ module Rubies
 
     def self.activate(env, ruby_info, ruby_name, sandbox)
       sandbox = File.expand_path(sandbox)
-      sandboxed_gems = "#{sandbox}/.gem/#{ruby_info.ruby_engine}/#{ruby_info.ruby_version}"
+      sandboxed_gems = File.join(sandbox,
+                                 ".gem",
+                                 ruby_info.ruby_engine,
+                                 ruby_info.ruby_version)
       sandboxed_bin = "#{sandboxed_gems}/bin"
 
       path = env.remove_dirs_from_path([env.activated_ruby_bin,
