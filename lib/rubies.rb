@@ -51,52 +51,54 @@ module Rubies
     end
   end
 
-  def self.ruby_info
-    ruby_engine = defined?(RUBY_ENGINE) ? RUBY_ENGINE : 'ruby'
-    ruby_version = RUBY_VERSION
-    gem_path = Gem.path.join(':')
+  module Commands
+    def self.ruby_info
+      ruby_engine = defined?(RUBY_ENGINE) ? RUBY_ENGINE : 'ruby'
+      ruby_version = RUBY_VERSION
+      gem_path = Gem.path.join(':')
 
-    puts [ruby_engine, ruby_version, gem_path].join("\n")
-  end
+      puts [ruby_engine, ruby_version, gem_path].join("\n")
+    end
 
-  def self.activate(ruby_name, sandbox)
-    ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
+    def self.activate(ruby_name, sandbox)
+      ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
 
-    ruby_info = RubyInfo.from_ruby_bin_path(ruby_bin)
-    env = Environment.new
+      ruby_info = RubyInfo.from_ruby_bin_path(ruby_bin)
+      env = Environment.new
 
-    sandbox = File.expand_path(sandbox)
-    sandboxed_gems = "#{sandbox}/.gem/#{ruby_info.ruby_engine}/#{ruby_info.ruby_version}"
-    sandboxed_bin = "#{sandboxed_gems}/bin"
+      sandbox = File.expand_path(sandbox)
+      sandboxed_gems = "#{sandbox}/.gem/#{ruby_info.ruby_engine}/#{ruby_info.ruby_version}"
+      sandboxed_bin = "#{sandboxed_gems}/bin"
 
-    current_path = remove_from_PATH(env.current_path,
-                                    [env.activated_ruby_bin,
-                                     env.activated_sandbox_bin])
+      current_path = Rubies.remove_from_PATH(env.current_path,
+                                             [env.activated_ruby_bin,
+                                              env.activated_sandbox_bin])
 
-    vars = {
-      "PATH" => "#{sandboxed_bin}:#{ruby_bin}:#{env.current_path}",
-      "GEM_HOME" => "#{sandboxed_gems}",
-      "GEM_PATH" => "#{sandboxed_gems}:#{ruby_info.gem_path}",
-      "RUBIES_ACTIVATED_RUBY_BIN_PATH" => ruby_bin,
-      "RUBIES_ACTIVATED_SANDBOX_BIN_PATH" => sandboxed_bin,
-    }
-    emit_vars(vars)
-  end
+      vars = {
+        "PATH" => "#{sandboxed_bin}:#{ruby_bin}:#{env.current_path}",
+        "GEM_HOME" => "#{sandboxed_gems}",
+        "GEM_PATH" => "#{sandboxed_gems}:#{ruby_info.gem_path}",
+        "RUBIES_ACTIVATED_RUBY_BIN_PATH" => ruby_bin,
+        "RUBIES_ACTIVATED_SANDBOX_BIN_PATH" => sandboxed_bin,
+      }
+      Rubies.emit_vars(vars)
+    end
 
-  def self.deactivate
-    ruby_info = RubyInfo.from_whichever_ruby_is_in_the_path
-    env = Environment.new
-    restored_path = remove_from_PATH(env.current_path,
-                                     [env.activated_ruby_bin,
-                                      env.activated_sandbox_bin])
-    vars = {
-      "PATH" => restored_path,
-      "GEM_HOME" => nil,
-      "GEM_PATH" => nil,
-      "RUBIES_ACTIVATED_RUBY_BIN_PATH" => nil,
-      "RUBIES_ACTIVATED_SANDBOX_BIN_PATH" => nil,
-    }
-    emit_vars(vars)
+    def self.deactivate
+      ruby_info = RubyInfo.from_whichever_ruby_is_in_the_path
+      env = Environment.new
+      restored_path = Rubies.remove_from_PATH(env.current_path,
+                                              [env.activated_ruby_bin,
+                                               env.activated_sandbox_bin])
+      vars = {
+        "PATH" => restored_path,
+        "GEM_HOME" => nil,
+        "GEM_PATH" => nil,
+        "RUBIES_ACTIVATED_RUBY_BIN_PATH" => nil,
+        "RUBIES_ACTIVATED_SANDBOX_BIN_PATH" => nil,
+      }
+      Rubies.emit_vars(vars)
+    end
   end
 
   def self.remove_from_PATH(path_variable, paths_to_remove)
@@ -118,9 +120,9 @@ end
 
 if __FILE__ == $0
   case ARGV.fetch(0)
-  when 'ruby-info' then Rubies.ruby_info
-  when 'activate' then Rubies.activate(ARGV.fetch(1), ARGV.fetch(2))
-  when 'deactivate' then Rubies.deactivate
+  when 'ruby-info' then Rubies::Commands.ruby_info
+  when 'activate' then Rubies::Commands.activate(ARGV.fetch(1), ARGV.fetch(2))
+  when 'deactivate' then Rubies::Commands.deactivate
   else raise ArgumentError.new("No subcommand given")
   end
 end
