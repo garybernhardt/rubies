@@ -35,9 +35,8 @@ module Rubies
                                  :current_gem_path,
                                  :activated_ruby_bin,
                                  :activated_sandbox_bin)
-    DEFAULT_BIN_PATH = Object.new
 
-    def initialize(ruby_bin_path=DEFAULT_BIN_PATH)
+    def initialize
       # Get current configuration
       current_path = ENV.fetch("PATH")
       current_gem_home = ENV.fetch("GEM_HOME") { nil }
@@ -64,7 +63,7 @@ module Rubies
     ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
 
     ruby_info = RubyInfo.from_ruby_bin_path(ruby_bin)
-    env = Environment.new(ruby_bin)
+    env = Environment.new
 
     sandbox = File.expand_path(sandbox)
     sandboxed_gems = "#{sandbox}/.gem/#{ruby_info.ruby_engine}/#{ruby_info.ruby_version}"
