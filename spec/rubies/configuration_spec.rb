@@ -61,6 +61,20 @@ module Rubies
       end
     end
 
+    describe "ruby-info" do
+      it "returns the name of the command" do
+        args = Configuration.from_arguments(["ruby-info"])
+        args.should == ["ruby-info"]
+      end
+
+      it "requires exactly zero arguments" do
+        expect do
+          Configuration.from_arguments(["ruby-info", "extra-arg"])
+        end.to raise_error(SystemExit)
+        stderr.should =~ /ruby-info doesn't take any arguments/
+      end
+    end
+
     context "when no subcommand is given" do
       it "shows usage" do
         expect do

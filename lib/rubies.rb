@@ -83,6 +83,10 @@ module Rubies
         if args.length != 0
           usage(1, parser, "deactivate doesn't take any arguments")
         end
+      elsif subcommand == "ruby-info"
+        if args.length != 0
+          usage(1, parser, "ruby-info doesn't take any arguments")
+        end
       else
         usage(1, parser, "#{subcommand} is not a command")
       end
