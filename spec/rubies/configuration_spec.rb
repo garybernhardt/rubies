@@ -69,5 +69,14 @@ module Rubies
         stderr.should =~ /unknown-command is not a command/
       end
     end
+
+    context "when unknown arguments are given" do
+      it "shows usage" do
+        expect do
+          Configuration.from_arguments(["--unknown-arg"])
+        end.to raise_error(SystemExit)
+        stderr.should =~ /invalid option: --unknown-arg/
+      end
+    end
   end
 end

@@ -67,7 +67,7 @@ module Rubies
       begin
         args = parser.parse(argv)
       rescue OptionParser::InvalidOption => e
-        usage(1, e + "\n" + parser)
+        usage(1, e.to_s + "\n" + parser.to_s)
       end
     end
 
