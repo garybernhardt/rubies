@@ -4,7 +4,7 @@ require 'rubygems'
 module Rubies
   def self.main
     case ARGV.fetch(0)
-    when 'ruby-info' then Rubies::Commands.ruby_info
+    when 'ruby-info' then Rubies::Commands.ruby_info!
     when 'activate'
       ruby_name = ARGV.fetch(1)
       sandbox = ARGV.fetch(2)
@@ -56,13 +56,17 @@ module Rubies
         :activated_sandbox_bin => nil)
     end
 
+    def self.ruby_info!
+      puts ruby_info
+    end
+
     def self.ruby_info
       ruby_engine = defined?(RUBY_ENGINE) ? RUBY_ENGINE : 'ruby'
       ruby_version = RUBY_VERSION
       bin_dir = RbConfig::CONFIG.fetch("bindir")
       gem_path = Gem.path.join(':')
 
-      puts [ruby_engine, ruby_version, bin_dir, gem_path].join("\n")
+      [ruby_engine, ruby_version, bin_dir, gem_path].join("\n")
     end
   end
 
