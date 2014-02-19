@@ -9,7 +9,7 @@ module Rubies
       ruby_name = ARGV.fetch(1)
       sandbox = ARGV.fetch(2)
       ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
-      Rubies::Commands.activate!(Rubies::Environment.from_system_environment,
+      Rubies::Commands.activate!(Rubies::Environment.from_system_environment(ENV),
                                  Rubies::RubyInfo.from_bin_dir(ruby_bin),
                                  ruby_name,
                                  sandbox)
@@ -46,7 +46,7 @@ module Rubies
 
     def self.deactivate
       ruby_info = RubyInfo.from_whichever_ruby_is_in_the_path
-      env = Environment.from_system_environment
+      env = Environment.from_system_environment(ENV)
       restored_path = Rubies.remove_from_PATH(env.path,
                                               [env.activated_ruby_bin,
                                                env.activated_sandbox_bin])
@@ -97,11 +97,11 @@ module Rubies
       :activated_sandbox_bin => "RUBIES_ACTIVATED_SANDBOX_BIN_DIR",
     }
 
-    def self.from_system_environment
+    def self.from_system_environment(unix_env)
       keys = members.map(&:to_sym)
       values = keys.map do |key|
         shell_key = SHELL_KEYS.fetch(key)
-        ENV.fetch(shell_key) { nil }
+        unix_env.fetch(shell_key) { nil }
       end
       new(Hash[keys.zip(values)])
     end
