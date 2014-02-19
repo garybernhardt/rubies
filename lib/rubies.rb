@@ -4,7 +4,8 @@ require 'rubygems'
 module Rubies
   def self.main
     case ARGV.fetch(0)
-    when 'ruby-info' then Rubies::Commands.ruby_info!
+    when 'ruby-info'
+      Rubies::Commands.ruby_info!
     when 'activate'
       ruby_name = ARGV.fetch(1)
       sandbox = ARGV.fetch(2)
