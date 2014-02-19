@@ -12,13 +12,12 @@ module Rubies
                                    :bin_path => "/usr/local/bin",
                                    :gem_path => "/lib/gems") }
     let(:new_vars) { Commands.activate(env, ruby_info, "ruby-2.1.0", "/myproj") }
-    let(:expected_bin) { ["/myproj/.gem/ruby/2.1.0/bin",
-                          "/usr/local/bin",
-                          "/usr/bin",
-                          "/bin"].join(":") }
 
     it "adds the Ruby and gem bin paths to the PATH" do
-      new_vars.fetch("PATH").should == expected_bin
+      new_vars.fetch("PATH").should == ["/myproj/.gem/ruby/2.1.0/bin",
+                                        "/usr/local/bin",
+                                        "/usr/bin",
+                                        "/bin"].join(":")
     end
 
     it "removes any previous activation's PATH entries" do
@@ -27,8 +26,9 @@ module Rubies
       env.current_path = [env.activated_sandbox_bin,
                           env.activated_ruby_bin,
                           env.current_path].join(":")
-      new_vars = Commands.activate(env, ruby_info, "ruby-2.1.0", "/myproj")
-      new_vars.fetch("PATH").should == expected_bin
+      new_path = new_vars.fetch("PATH")
+      new_path.should_not include env.activated_ruby_bin
+      new_path.should_not include env.activated_sandbox_bin
     end
 
     it "sets gem environment variables"
