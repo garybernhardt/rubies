@@ -48,12 +48,10 @@ module Rubies
                                        :activated_sandbox_bin)
 
     def self.from_system_environment
-      # Get current configuration
       current_path = ENV.fetch("PATH")
       current_gem_home = ENV.fetch("GEM_HOME") { nil }
       current_gem_path = ENV.fetch("GEM_PATH") { nil }
 
-      # Get activated configuration
       activated_ruby_bin = ENV.fetch("RUBIES_ACTIVATED_RUBY_BIN_DIR") { nil }
       activated_sandbox_bin = ENV.fetch("RUBIES_ACTIVATED_SANDBOX_BIN_DIR") { nil }
 
