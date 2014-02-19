@@ -40,5 +40,14 @@ unset RUBIES_ACTIVATED_RUBY_BIN_DIR
 unset RUBIES_ACTIVATED_SANDBOX_BIN_DIR}
       end
     end
+
+    describe "PATH" do
+      it "can remove directories from PATH" do
+        env = Environment.from_system_environment(
+          "PATH" => "/usr/local/bin:/usr/bin:/sbin:/bin")
+        path = env.remove_dirs_from_path(["/usr/bin", "/bin"])
+        path.should == "/usr/local/bin:/sbin"
+      end
+    end
   end
 end

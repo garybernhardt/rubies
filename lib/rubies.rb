@@ -28,9 +28,8 @@ module Rubies
       sandboxed_gems = "#{sandbox}/.gem/#{ruby_info.ruby_engine}/#{ruby_info.ruby_version}"
       sandboxed_bin = "#{sandboxed_gems}/bin"
 
-      path = Rubies.remove_from_PATH(env.path,
-                                     [env.activated_ruby_bin,
-                                      env.activated_sandbox_bin])
+      path = env.remove_dirs_from_path([env.activated_ruby_bin,
+                                        env.activated_sandbox_bin])
 
       Environment.new(
         :path => "#{sandboxed_bin}:#{ruby_info.bin_dir}:#{path}",
@@ -47,9 +46,8 @@ module Rubies
     def self.deactivate
       ruby_info = RubyInfo.from_whichever_ruby_is_in_the_path
       env = Environment.from_system_environment(ENV)
-      restored_path = Rubies.remove_from_PATH(env.path,
-                                              [env.activated_ruby_bin,
-                                               env.activated_sandbox_bin])
+      restored_path = env.remove_dirs_from_path([env.activated_ruby_bin,
+                                                 env.activated_sandbox_bin])
       Environment.new(
         :path => restored_path,
         :current_gem_home => nil,
@@ -79,7 +77,7 @@ module Rubies
 
     # Newer rubies have this; older rubies don't
     def to_h
-      members.map(&:to_sym).zip(values)
+      Hash[members.map(&:to_sym).zip(values)]
     end
   end
 
@@ -119,6 +117,10 @@ module Rubies
         end
       end.join("\n")
     end
+
+    def remove_dirs_from_path(dirs_to_remove)
+      (self.path.split(/:/) - dirs_to_remove).join(":")
+    end
   end
 
   class RubyInfo < StrictStruct.new(:ruby_engine,
@@ -152,10 +154,6 @@ module Rubies
           :bin_dir => ruby_info.fetch(2),
           :gem_path => ruby_info.fetch(3))
     end
-  end
-
-  def self.remove_from_PATH(path_variable, dirs_to_remove)
-    (path_variable.split(/:/) - dirs_to_remove).join(":")
   end
 end
 
