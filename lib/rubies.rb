@@ -60,11 +60,10 @@ module Rubies
       puts [ruby_engine, ruby_version, gem_path].join("\n")
     end
 
-    def self.activate(ruby_name, sandbox)
+    def self.activate(env, ruby_name, sandbox)
       ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
 
       ruby_info = RubyInfo.from_ruby_bin_path(ruby_bin)
-      env = Environment.new
 
       sandbox = File.expand_path(sandbox)
       sandboxed_gems = "#{sandbox}/.gem/#{ruby_info.ruby_engine}/#{ruby_info.ruby_version}"
@@ -83,8 +82,8 @@ module Rubies
       }
     end
 
-    def self.activate!(ruby_name, sandbox)
-      Rubies.emit_vars!(activate(ruby_name, sandbox))
+    def self.activate!(env, ruby_name, sandbox)
+      Rubies.emit_vars!(activate(env, ruby_name, sandbox))
     end
 
     def self.deactivate
@@ -127,7 +126,9 @@ end
 if __FILE__ == $0
   case ARGV.fetch(0)
   when 'ruby-info' then Rubies::Commands.ruby_info
-  when 'activate' then Rubies::Commands.activate!(ARGV.fetch(1), ARGV.fetch(2))
+  when 'activate' then Rubies::Commands.activate!(Rubies::Environment.new,
+                                                  ARGV.fetch(1),
+                                                  ARGV.fetch(2))
   when 'deactivate' then Rubies::Commands.deactivate!
   else raise ArgumentError.new("No subcommand given")
   end
