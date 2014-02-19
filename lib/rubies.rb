@@ -4,7 +4,9 @@ require 'rubygems'
 module Rubies
   class RubyInfo < Struct.new(:ruby_engine,
                               :ruby_version,
+                              :bin_path,
                               :gem_path)
+
     def self.from_whichever_ruby_is_in_the_path
       from_ruby_command("ruby")
     end
@@ -22,7 +24,7 @@ module Rubies
       end
 
       ruby_info = ruby_info_string.split(/\n/)
-      unless ruby_info.length == 3
+      unless ruby_info.length == RubyInfo.members.length
         raise RuntimeError.new("Ruby info had wrong length; this is a bug!")
       end
 
@@ -55,16 +57,13 @@ module Rubies
     def self.ruby_info
       ruby_engine = defined?(RUBY_ENGINE) ? RUBY_ENGINE : 'ruby'
       ruby_version = RUBY_VERSION
+      bin_path = RbConfig::CONFIG.fetch("bindir")
       gem_path = Gem.path.join(':')
 
-      puts [ruby_engine, ruby_version, gem_path].join("\n")
+      puts [ruby_engine, ruby_version, bin_path, gem_path].join("\n")
     end
 
-    def self.activate(env, ruby_name, sandbox)
-      ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
-
-      ruby_info = RubyInfo.from_ruby_bin_path(ruby_bin)
-
+    def self.activate(env, ruby_info, ruby_name, sandbox)
       sandbox = File.expand_path(sandbox)
       sandboxed_gems = "#{sandbox}/.gem/#{ruby_info.ruby_engine}/#{ruby_info.ruby_version}"
       sandboxed_bin = "#{sandboxed_gems}/bin"
@@ -74,16 +73,16 @@ module Rubies
                                               env.activated_sandbox_bin])
 
       {
-        "PATH" => "#{sandboxed_bin}:#{ruby_bin}:#{env.current_path}",
+        "PATH" => "#{sandboxed_bin}:#{ruby_info.bin_path}:#{env.current_path}",
         "GEM_HOME" => "#{sandboxed_gems}",
         "GEM_PATH" => "#{sandboxed_gems}:#{ruby_info.gem_path}",
-        "RUBIES_ACTIVATED_RUBY_BIN_PATH" => ruby_bin,
+        "RUBIES_ACTIVATED_RUBY_BIN_PATH" => ruby_info.bin_path,
         "RUBIES_ACTIVATED_SANDBOX_BIN_PATH" => sandboxed_bin,
       }
     end
 
-    def self.activate!(env, ruby_name, sandbox)
-      Rubies.emit_vars!(activate(env, ruby_name, sandbox))
+    def self.activate!(env, ruby_info, ruby_name, sandbox)
+      Rubies.emit_vars!(activate(env, ruby_info, ruby_name, sandbox))
     end
 
     def self.deactivate
@@ -126,9 +125,14 @@ end
 if __FILE__ == $0
   case ARGV.fetch(0)
   when 'ruby-info' then Rubies::Commands.ruby_info
-  when 'activate' then Rubies::Commands.activate!(Rubies::Environment.from_system_environment,
-                                                  ARGV.fetch(1),
-                                                  ARGV.fetch(2))
+  when 'activate'
+    ruby_name = ARGV.fetch(1)
+    sandbox = ARGV.fetch(2)
+    ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
+    Rubies::Commands.activate!(Rubies::Environment.from_system_environment,
+                               Rubies::RubyInfo.from_ruby_bin_path(ruby_bin),
+                               ruby_name,
+                               sandbox)
   when 'deactivate' then Rubies::Commands.deactivate!
   else raise ArgumentError.new("No subcommand given")
   end
