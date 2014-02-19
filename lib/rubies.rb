@@ -14,6 +14,21 @@ module Rubies
     end
   end
 
+  class StrictStruct < Struct
+    def initialize(params)
+      super(*self.class.members.map { |member| params.fetch(member.to_sym) })
+    end
+
+    def merge(params)
+      self.class.new(to_h.merge(params))
+    end
+
+    # Newer rubies have this; older rubies don't
+    def to_h
+      Hash[members.map(&:to_sym).zip(values)]
+    end
+  end
+
   module Commands
     def self.activate!(ruby_name, sandbox)
       env = Rubies::Environment.from_system_environment(ENV)
@@ -62,21 +77,6 @@ module Rubies
     def self.ruby_info!
       info = RubyInfo.from_this_ruby_process
       puts [info.ruby_engine, info.ruby_version, info.bin_dir, info.gem_path]
-    end
-  end
-
-  class StrictStruct < Struct
-    def initialize(params)
-      super(*self.class.members.map { |member| params.fetch(member.to_sym) })
-    end
-
-    def merge(params)
-      self.class.new(to_h.merge(params))
-    end
-
-    # Newer rubies have this; older rubies don't
-    def to_h
-      Hash[members.map(&:to_sym).zip(values)]
     end
   end
 
