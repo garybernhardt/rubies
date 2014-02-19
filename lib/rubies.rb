@@ -2,10 +2,16 @@
 require 'rubygems'
 
 module Rubies
-  class RubyInfo < Struct.new(:ruby_engine,
-                              :ruby_version,
-                              :bin_path,
-                              :gem_path)
+  class StrictStruct < Struct
+    def initialize(params)
+      super(*self.class.members.map { |member| params.fetch(member) })
+    end
+  end
+
+  class RubyInfo < StrictStruct.new(:ruby_engine,
+                                    :ruby_version,
+                                    :bin_path,
+                                    :gem_path)
 
     def self.from_whichever_ruby_is_in_the_path
       from_ruby_command("ruby")
@@ -28,15 +34,18 @@ module Rubies
         raise RuntimeError.new("Ruby info had wrong length; this is a bug!")
       end
 
-      new(*ruby_info)
+      new(:ruby_engine => ruby_info.fetch(0),
+          :ruby_version => ruby_info.fetch(1),
+          :bin_path => ruby_info.fetch(2),
+          :gem_path => ruby_info.fetch(3))
     end
   end
 
-  class Environment < Struct.new(:current_path,
-                                 :current_gem_home,
-                                 :current_gem_path,
-                                 :activated_ruby_bin,
-                                 :activated_sandbox_bin)
+  class Environment < StrictStruct.new(:current_path,
+                                       :current_gem_home,
+                                       :current_gem_path,
+                                       :activated_ruby_bin,
+                                       :activated_sandbox_bin)
 
     def self.from_system_environment
       # Get current configuration
@@ -48,8 +57,11 @@ module Rubies
       activated_ruby_bin = ENV.fetch("RUBIES_ACTIVATED_RUBY_BIN_PATH") { nil }
       activated_sandbox_bin = ENV.fetch("RUBIES_ACTIVATED_SANDBOX_BIN_PATH") { nil }
 
-      new(current_path, current_gem_home, current_gem_path, activated_ruby_bin,
-          activated_sandbox_bin)
+      new(:current_path => current_path,
+          :current_gem_home => current_gem_home,
+          :current_gem_path => current_gem_path,
+          :activated_ruby_bin => activated_ruby_bin,
+          :activated_sandbox_bin => activated_sandbox_bin)
     end
   end
 
