@@ -4,14 +4,14 @@ require 'rubygems'
 
 module Rubies
   def self.main
-    case ARGV.fetch(0)
+    subcommand, *args = Configuration.from_arguments(ARGV)
+    case subcommand
     when 'ruby-info'
       Rubies::Commands.ruby_info!
     when 'activate'
-      Rubies::Commands.activate!(ARGV.fetch(1), ARGV.fetch(2))
+      Rubies::Commands.activate!(*args)
     when 'deactivate'
       Rubies::Commands.deactivate!
-    else raise ArgumentError.new("No subcommand given")
     end
   end
 
