@@ -32,6 +32,13 @@ module Rubies
 
   class Configuration
     def self.from_arguments(argv)
+      parser = build_parser
+      args = parse_args(parser, argv)
+      enforce_subcommand_args(parser, args)
+      args
+    end
+
+    def self.build_parser
       parser = OptionParser.new do |opts|
         opts.banner = dedent(<<-END)
         Usage: #{$PROGRAM_NAME} [options]
@@ -54,14 +61,18 @@ module Rubies
           Undo whatever any previous activate did.
         END
       end
+    end
 
+    def self.parse_args(parser, argv)
       begin
-        command_args = parser.parse(argv)
+        args = parser.parse(argv)
       rescue OptionParser::InvalidOption => e
         usage(1, e + "\n" + parser)
       end
+    end
 
-      subcommand, *args = command_args
+    def self.enforce_subcommand_args(parser, args)
+      subcommand, *args = args
       if subcommand == "activate"
         if args.length != 2
           usage(1, parser, "wrong number of arguments for activate")
@@ -73,8 +84,6 @@ module Rubies
       else
         usage(1, parser, "#{subcommand} is not a command")
       end
-
-      command_args
     end
 
     def self.usage(exit_status, usage_message, error_message=nil)
