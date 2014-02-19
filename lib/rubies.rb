@@ -36,7 +36,7 @@ module Rubies
                                  :activated_ruby_bin,
                                  :activated_sandbox_bin)
 
-    def initialize
+    def self.from_system_environment
       # Get current configuration
       current_path = ENV.fetch("PATH")
       current_gem_home = ENV.fetch("GEM_HOME") { nil }
@@ -46,8 +46,8 @@ module Rubies
       activated_ruby_bin = ENV.fetch("RUBIES_ACTIVATED_RUBY_BIN_PATH") { nil }
       activated_sandbox_bin = ENV.fetch("RUBIES_ACTIVATED_SANDBOX_BIN_PATH") { nil }
 
-      super(current_path, current_gem_home, current_gem_path, activated_ruby_bin,
-            activated_sandbox_bin)
+      new(current_path, current_gem_home, current_gem_path, activated_ruby_bin,
+          activated_sandbox_bin)
     end
   end
 
@@ -88,7 +88,7 @@ module Rubies
 
     def self.deactivate
       ruby_info = RubyInfo.from_whichever_ruby_is_in_the_path
-      env = Environment.new
+      env = Environment.from_system_environment
       restored_path = Rubies.remove_from_PATH(env.current_path,
                                               [env.activated_ruby_bin,
                                                env.activated_sandbox_bin])
@@ -126,7 +126,7 @@ end
 if __FILE__ == $0
   case ARGV.fetch(0)
   when 'ruby-info' then Rubies::Commands.ruby_info
-  when 'activate' then Rubies::Commands.activate!(Rubies::Environment.new,
+  when 'activate' then Rubies::Commands.activate!(Rubies::Environment.from_system_environment,
                                                   ARGV.fetch(1),
                                                   ARGV.fetch(2))
   when 'deactivate' then Rubies::Commands.deactivate!
