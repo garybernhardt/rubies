@@ -9,7 +9,7 @@ module Rubies
                                 :activated_sandbox_bin => "/myproj/.gems/bin") }
     let(:ruby_info) { RubyInfo.new(:ruby_engine => "ruby",
                                    :ruby_version => "2.1.0",
-                                   :bin_path => "/usr/local/bin",
+                                   :bin_dir => "/usr/local/bin",
                                    :gem_path => "/lib/gems") }
     let(:new_vars) { Commands.activate(env, ruby_info, "ruby-2.1.0", "/myproj") }
 
