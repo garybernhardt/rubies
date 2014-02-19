@@ -74,14 +74,17 @@ module Rubies
                                              [env.activated_ruby_bin,
                                               env.activated_sandbox_bin])
 
-      vars = {
+      {
         "PATH" => "#{sandboxed_bin}:#{ruby_bin}:#{env.current_path}",
         "GEM_HOME" => "#{sandboxed_gems}",
         "GEM_PATH" => "#{sandboxed_gems}:#{ruby_info.gem_path}",
         "RUBIES_ACTIVATED_RUBY_BIN_PATH" => ruby_bin,
         "RUBIES_ACTIVATED_SANDBOX_BIN_PATH" => sandboxed_bin,
       }
-      Rubies.emit_vars(vars)
+    end
+
+    def self.activate!(ruby_name, sandbox)
+      Rubies.emit_vars!(activate(ruby_name, sandbox))
     end
 
     def self.deactivate
@@ -90,14 +93,17 @@ module Rubies
       restored_path = Rubies.remove_from_PATH(env.current_path,
                                               [env.activated_ruby_bin,
                                                env.activated_sandbox_bin])
-      vars = {
+      {
         "PATH" => restored_path,
         "GEM_HOME" => nil,
         "GEM_PATH" => nil,
         "RUBIES_ACTIVATED_RUBY_BIN_PATH" => nil,
         "RUBIES_ACTIVATED_SANDBOX_BIN_PATH" => nil,
       }
-      Rubies.emit_vars(vars)
+    end
+
+    def self.deactivate!
+      Rubies.emit_vars!(deactivate)
     end
   end
 
@@ -105,7 +111,7 @@ module Rubies
     (path_variable.split(/:/) - paths_to_remove).join(":")
   end
 
-  def self.emit_vars(vars)
+  def self.emit_vars!(vars)
     sorted_vars = vars.to_a.sort
     shell_code = sorted_vars.map do |k, v|
       if v.nil?
@@ -121,8 +127,8 @@ end
 if __FILE__ == $0
   case ARGV.fetch(0)
   when 'ruby-info' then Rubies::Commands.ruby_info
-  when 'activate' then Rubies::Commands.activate(ARGV.fetch(1), ARGV.fetch(2))
-  when 'deactivate' then Rubies::Commands.deactivate
+  when 'activate' then Rubies::Commands.activate!(ARGV.fetch(1), ARGV.fetch(2))
+  when 'deactivate' then Rubies::Commands.deactivate!
   else raise ArgumentError.new("No subcommand given")
   end
 end
