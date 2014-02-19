@@ -22,7 +22,7 @@ module Rubies
       expect do
         Configuration.from_arguments("--help")
       end.to raise_error SystemExit
-      stderr.should =~ /^Usage:/
+      stderr.should =~ /\AUsage:/
     end
 
     describe "activate" do
