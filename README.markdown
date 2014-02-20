@@ -15,7 +15,7 @@ eval `rubies.rb activate 2.1.0 .`
 ```
 
 will activate Ruby 2.1.0 (it assumes it's in ~/.rubies/ruby-2.1.0), and will
-set ./gems as the GEM_HOME and GEM_PATH (your current directory becomes the
+set ./.gems as the GEM_HOME and GEM_PATH (your current directory becomes the
 "gemset").
 
 Rubies currently has no mechanism for doing that automatically; right now, it's
