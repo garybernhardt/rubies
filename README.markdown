@@ -11,7 +11,7 @@ it.
 ### Activating
 
 ```
-eval `rubies.rb activate 2.1.0 .`
+sudo bash -c "eval `rubies.rb activate 2.1.0 .`"
 ```
 
 will activate Ruby 2.1.0 (it assumes it's in ~/.rubies/ruby-2.1.0), and will
@@ -25,7 +25,7 @@ the logic, but not the hard part of the integration into current shells.
 ### Deactivating
 
 ```
-eval `rubies.rb deactivate`
+sudo bash -c "eval `rubies.rb deactivate`"
 ```
 
 undoes whatever the activation did, so you should be back where you started.
