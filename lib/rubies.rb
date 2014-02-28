@@ -108,7 +108,7 @@ module Rubies
   module Commands
     def self.activate!(ruby_name, sandbox)
       env = Rubies::Environment.from_system_environment(ENV)
-      ruby_bin = File.expand_path("~/.rubies/#{ruby_name}/bin")
+      ruby_bin = File.expand_path("~/.rubies/ruby-#{ruby_name}/bin")
       ruby_info = Rubies::RubyInfo.from_bin_dir(ruby_bin)
       env = Rubies::Commands.activate(env, ruby_info, ruby_name, sandbox)
       $stderr.puts "Activating Ruby #{ruby_bin} with gems in #{env.current_gem_home}"
