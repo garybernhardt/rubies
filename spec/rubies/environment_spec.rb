@@ -8,12 +8,14 @@ module Rubies
           "PATH" => "path",
           "GEM_HOME" => "/gem/home",
           "GEM_PATH" => "/gem/path",
+          "RUBIES_ACTIVATED_RUBY_NAME" => "2.1.0",
           "RUBIES_ACTIVATED_RUBY_BIN_DIR" => "/ruby/bin",
           "RUBIES_ACTIVATED_SANDBOX_BIN_DIR" => "/sandbox/bin")
         env.path.should == "path"
         env.current_gem_home.should == "/gem/home"
         env.current_gem_path.should == "/gem/path"
         env.activated_ruby_bin.should == "/ruby/bin"
+        env.activated_ruby_name.should == "2.1.0"
         env.activated_sandbox_bin.should == "/sandbox/bin"
       end
 
@@ -23,6 +25,7 @@ module Rubies
         env.current_gem_home.should == nil
         env.current_gem_path.should == nil
         env.activated_ruby_bin.should == nil
+        env.activated_ruby_name.should == nil
         env.activated_sandbox_bin.should == nil
       end
     end
@@ -37,6 +40,7 @@ export GEM_HOME="/gem/home"
 unset GEM_PATH
 export PATH="/path"
 unset RUBIES_ACTIVATED_RUBY_BIN_DIR
+unset RUBIES_ACTIVATED_RUBY_NAME
 unset RUBIES_ACTIVATED_SANDBOX_BIN_DIR}
       end
     end

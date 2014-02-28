@@ -6,6 +6,7 @@ module Rubies
                                 :current_gem_home => "/myproj/.gems",
                                 :current_gem_path => "/lib/gems:/myproj/.gems",
                                 :activated_ruby_bin => "/usr/local/bin",
+                                :activated_ruby_name => "2.1.0",
                                 :activated_sandbox_bin => "/myproj/.gems/bin") }
     let(:ruby_info) { RubyInfo.new(:ruby_engine => "ruby",
                                    :ruby_version => "2.1.0",
