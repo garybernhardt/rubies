@@ -12,7 +12,9 @@ module Rubies
       let(:env) { Environment.new(:path => "/usr/bin:/bin",
                                   :current_gem_home => nil,
                                   :current_gem_path => nil,
+                                  :activated_ruby_name => nil,
                                   :activated_ruby_bin => nil,
+                                  :activated_ruby_name => nil,
                                   :activated_sandbox_bin => nil) }
 
       it "adds the Ruby and gem bin paths to the PATH" do
@@ -31,6 +33,10 @@ module Rubies
         new_env.activated_ruby_bin.should == "/usr/local/bin"
         new_env.activated_sandbox_bin.should == "/myproj/.gem/ruby/2.1.0/bin"
       end
+
+      it "saves the Ruby version" do
+        new_env.activated_ruby_name.should == "ruby-2.1.0"
+      end
     end
 
     context "when a ruby is already activated" do
@@ -38,6 +44,7 @@ module Rubies
                                   :current_gem_home => "/myproj/.gems",
                                   :current_gem_path => "/lib/gems:/myproj/.gems",
                                   :activated_ruby_bin => "/usr/local/bin",
+                                  :activated_ruby_name => "2.1.0",
                                   :activated_sandbox_bin => "/myproj/.gems/bin") }
 
       it "removes any previous activation's PATH entries" do
@@ -48,6 +55,10 @@ module Rubies
                     env.path].join(":")
         new_env.path.should_not include env.activated_ruby_bin
         new_env.path.should_not include env.activated_sandbox_bin
+      end
+
+      it "saves the Ruby version" do
+        new_env.activated_ruby_name.should == "ruby-2.1.0"
       end
     end
   end
