@@ -131,6 +131,7 @@ module Rubies
         :current_gem_home => "#{sandboxed_gems}",
         :current_gem_path => "#{sandboxed_gems}:#{ruby_info.gem_path}",
         :activated_ruby_bin => ruby_info.bin_dir,
+        :activated_ruby_name => ruby_name,
         :activated_sandbox_bin => sandboxed_bin)
     end
 
@@ -161,6 +162,7 @@ module Rubies
   class Environment < StrictStruct.new(:path,
                                        :current_gem_home,
                                        :current_gem_path,
+                                       :activated_ruby_name,
                                        :activated_ruby_bin,
                                        :activated_ruby_name,
                                        :activated_sandbox_bin)

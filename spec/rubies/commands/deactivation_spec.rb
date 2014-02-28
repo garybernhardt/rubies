@@ -22,6 +22,7 @@ module Rubies
       new_env.current_gem_home.should == nil
       new_env.current_gem_path.should == nil
       new_env.activated_ruby_bin.should == nil
+      new_env.activated_ruby_name.should == nil
       new_env.activated_sandbox_bin.should == nil
     end
   end
