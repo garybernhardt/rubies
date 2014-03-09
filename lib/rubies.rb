@@ -186,17 +186,18 @@ module Rubies
     end
 
     def to_shell_commands
-      unix_vars = self.to_h.map do |k, v|
+      vars = self.to_h.map do |k, v|
         k = SHELL_KEYS.fetch(k)
         [k, v]
       end
-      unix_vars.sort.map do |k, v|
+      assignments = vars.sort.map do |k, v|
         if v.nil?
           %{unset #{k}}
         else
           %{export #{k}="#{v}"}
         end
-      end.join("\n")
+      end
+      (assignments + ["rehash"]).join("\n")
     end
 
     def remove_dirs_from_path(dirs_to_remove)
