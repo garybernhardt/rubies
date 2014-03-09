@@ -138,6 +138,7 @@ module Rubies
     def self.deactivate!
       env = Environment.from_system_environment(ENV)
       ruby_info = RubyInfo.from_whichever_ruby_is_in_the_path
+      $stderr.puts "Deactivating Ruby"
       puts deactivate(env, ruby_info).to_shell_commands
     end
 
