@@ -14,7 +14,6 @@ module Rubies
                                   :current_gem_path => nil,
                                   :activated_ruby_name => nil,
                                   :activated_ruby_bin => nil,
-                                  :activated_ruby_name => nil,
                                   :activated_sandbox_bin => nil) }
 
       it "adds the Ruby and gem bin paths to the PATH" do

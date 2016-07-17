@@ -165,7 +165,6 @@ module Rubies
                                        :current_gem_path,
                                        :activated_ruby_name,
                                        :activated_ruby_bin,
-                                       :activated_ruby_name,
                                        :activated_sandbox_bin)
 
     SHELL_KEYS = {
