@@ -15,15 +15,15 @@ module Rubies
     let(:new_env) { Commands.deactivate(env, ruby_info) }
 
     it "removes the Ruby and gem bin paths from PATH" do
-      new_env.path.should == "/bin"
+      expect(new_env.path).to eq("/bin")
     end
 
     it "unsets all other variables" do
-      new_env.current_gem_home.should == nil
-      new_env.current_gem_path.should == nil
-      new_env.activated_ruby_bin.should == nil
-      new_env.activated_ruby_name.should == nil
-      new_env.activated_sandbox_bin.should == nil
+      expect(new_env.current_gem_home).to eq(nil)
+      expect(new_env.current_gem_path).to eq(nil)
+      expect(new_env.activated_ruby_bin).to eq(nil)
+      expect(new_env.activated_ruby_name).to eq(nil)
+      expect(new_env.activated_sandbox_bin).to eq(nil)
     end
   end
 end

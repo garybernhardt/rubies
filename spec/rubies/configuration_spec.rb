@@ -22,14 +22,14 @@ module Rubies
       expect do
         Configuration.from_arguments("--help")
       end.to raise_error SystemExit
-      stderr.should =~ /\AUsage:/
+      expect(stderr).to match(/\AUsage:/)
     end
 
     describe "activate" do
       it "returns the arguments" do
         args = Configuration.from_arguments(["activate", "2.1.0", "."])
-        args.should == ["activate", "2.1.0", "."]
-        stderr.should == ""
+        expect(args).to eq(["activate", "2.1.0", "."])
+        expect(stderr).to eq("")
       end
 
       it "requires exactly two arguments" do
@@ -42,7 +42,7 @@ module Rubies
           expect do
             Configuration.from_arguments(["activate"] + args)
           end.to raise_error(SystemExit)
-          stderr.should =~ /wrong number of arguments for activate/
+          expect(stderr).to match(/wrong number of arguments for activate/)
         end
       end
     end
@@ -50,28 +50,28 @@ module Rubies
     describe "deactivate" do
       it "returns the name of the command" do
         args = Configuration.from_arguments(["deactivate"])
-        args.should == ["deactivate"]
+        expect(args).to eq(["deactivate"])
       end
 
       it "requires exactly zero arguments" do
         expect do
           Configuration.from_arguments(["deactivate", "extra-arg"])
         end.to raise_error(SystemExit)
-        stderr.should =~ /deactivate doesn't take any arguments/
+        expect(stderr).to match(/deactivate doesn't take any arguments/)
       end
     end
 
     describe "ruby-info" do
       it "returns the name of the command" do
         args = Configuration.from_arguments(["ruby-info"])
-        args.should == ["ruby-info"]
+        expect(args).to eq(["ruby-info"])
       end
 
       it "requires exactly zero arguments" do
         expect do
           Configuration.from_arguments(["ruby-info", "extra-arg"])
         end.to raise_error(SystemExit)
-        stderr.should =~ /ruby-info doesn't take any arguments/
+        expect(stderr).to match(/ruby-info doesn't take any arguments/)
       end
     end
 
@@ -80,7 +80,7 @@ module Rubies
         expect do
           Configuration.from_arguments([])
         end.to raise_error(SystemExit)
-        stderr.should =~ /\AUsage:/
+        expect(stderr).to match(/\AUsage:/)
       end
     end
 
@@ -89,7 +89,7 @@ module Rubies
         expect do
           Configuration.from_arguments(["unknown-command"])
         end.to raise_error(SystemExit)
-        stderr.should =~ /unknown-command is not a command/
+        expect(stderr).to match(/unknown-command is not a command/)
       end
     end
 
@@ -98,7 +98,7 @@ module Rubies
         expect do
           Configuration.from_arguments(["--unknown-arg"])
         end.to raise_error(SystemExit)
-        stderr.should =~ /invalid option: --unknown-arg/
+        expect(stderr).to match(/invalid option: --unknown-arg/)
       end
     end
   end
